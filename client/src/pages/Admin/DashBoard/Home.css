@@ -1,0 +1,35 @@
+.sidenav {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    z-index: 1;
+    top:0;
+    left: 0;
+    background-color: #394061;
+    overflow-x: hidden;
+    padding-top: 20px;
+    margin-top: 60px;
+    padding-left:10px;
+}
+
+.sidenav-inner{
+    color:#848bb6;
+}
+
+.sidenav-inner h5{
+    font-size:15px;
+    margin-left:3px;
+}
+.sidenav .nav-link.active{
+    background-color:#394061 !important;
+    letter-spacing: 1px !important;
+}
+.nav-links{
+    margin-left:-15px;
+}
+.inactive-link{
+    color:#6771a1
+}
+.inactive-link:hover{
+    color:#fff;
+}
