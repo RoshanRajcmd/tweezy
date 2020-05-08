@@ -33,3 +33,7 @@
 .inactive-link:hover{
     color:#fff;
 }
+.main-content{
+    margin-left:250px;
+    background-color: #efefef;
+}

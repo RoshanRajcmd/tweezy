@@ -8,7 +8,7 @@ import "./Header.css";
 
 // FontAwesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faSearch, faHashtag } from "@fortawesome/free-solid-svg-icons";
 
 class Header extends React.Component {
   render() {
@@ -16,7 +16,10 @@ class Header extends React.Component {
       <div>
         <Navbar className="navbar" sticky="top">
           <div className="navbar-bg-light">
-            <h5 className="brandName">HIRE.ME</h5>
+            <h5 className="brandName">
+              <FontAwesomeIcon icon={faHashtag} className=" mr-2" />
+              TWEEZY
+            </h5>
           </div>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
 

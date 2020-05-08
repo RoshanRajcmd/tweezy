@@ -8,13 +8,13 @@
     padding:15px;
 }
 .brandName{
-    margin-left:60px;
+    margin-left:55px;
     margin-right:30px;
     color:#fff !important;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     font-size: 18px;
     margin-top:5px;
-    width:130px;
+    width:135px;
 }
 .searchBar{
     background-color: #9c91d5 !important;

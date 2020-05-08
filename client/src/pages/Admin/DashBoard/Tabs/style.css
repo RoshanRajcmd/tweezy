@@ -1,0 +1,37 @@
+.card{
+    background-color: #fff;
+    border-radius: 5px;
+    padding:10px;
+}
+.card-title h5{
+    color:#34495e;
+    font-size: 15px;
+    letter-spacing: 1px;;
+}
+.score{
+    margin-top:30px;
+}
+.score h5{
+    color:#6b6c6c;
+    font-size:28px;
+}
+.score h6{
+    color:#6b6c6c;
+    font-size:20px;
+    margin-left:13px; 
+}
+.final-score{
+    color:#3498db !important;
+    font-size: 19px !important;
+    margin-left:15px !important;
+    margin-top:10px !important;
+}
+.positive{
+    color:#3498db
+}
+.negative{
+    color:#c0392b
+}
+.neutral{
+    color:#f1c40f
+}
