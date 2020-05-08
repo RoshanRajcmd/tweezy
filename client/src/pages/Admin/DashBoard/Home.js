@@ -52,7 +52,7 @@ class Home extends React.Component {
                       icon={faUserTie}
                       className="tabIcon mr-2"
                     />
-                    Post a new role
+                    Show All Tweets
                   </Nav.Link>
                   <Nav.Item>
                     <Nav.Link eventKey="d" className="inactive-link">
@@ -60,7 +60,7 @@ class Home extends React.Component {
                         icon={faChartBar}
                         className="tabIcon mr-2"
                       />
-                      Manage Posts
+                      History
                     </Nav.Link>
                   </Nav.Item>
                 </Nav.Item>

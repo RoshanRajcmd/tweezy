@@ -1,7 +1,7 @@
 import React from "react";
 
 // Bootstrap Components
-import { Row, Col } from "react-bootstrap";
+import { Row, Col, Table } from "react-bootstrap";
 
 // StyleSheet
 import "./style.css";
@@ -30,6 +30,7 @@ const data = {
     },
   ],
 };
+
 class OverView extends React.Component {
   render() {
     return (
@@ -149,6 +150,92 @@ class OverView extends React.Component {
                 </center>
               </div>
             </div>
+          </Col>
+        </Row>
+        <Row className="mt-3">
+          <Col md={4}>
+            <h5 className="small font-weight-bold">Recent Tweets</h5>
+            <Table striped bordered hover size="sm" variant="dark">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Username</th>
+                  <th>Tweet</th>
+                  <th>Tone</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td colSpan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td colSpan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td colSpan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+              </tbody>
+            </Table>
+          </Col>
+          <Col md={4}>
+            <h5 className="small font-weight-bold">Top Influencers</h5>
+            <Table striped bordered hover size="sm" variant="dark">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Username</th>
+                  <th>No Of Tweets</th>
+                  <th>No Of Likes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td colSpan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td colSpan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td colSpan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+              </tbody>
+            </Table>
           </Col>
         </Row>
       </div>
