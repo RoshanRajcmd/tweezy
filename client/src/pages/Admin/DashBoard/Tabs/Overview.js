@@ -18,6 +18,10 @@ import {
   faRetweet,
   faHashtag,
   faUserAlt,
+  faSadCry,
+  faSadTear,
+  faSmileBeam,
+  faAngry,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Charts
@@ -26,17 +30,6 @@ import { Doughnut } from "react-chartjs-2";
 // Context
 import Context from "../../../../context/Context";
 import ShowHashTags from "../components/Header/Modal/ShowHashTags";
-
-//
-const data = {
-  datasets: [
-    {
-      data: [300, 50, 100],
-      backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-      hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-    },
-  ],
-};
 
 class OverView extends React.Component {
   constructor() {
@@ -52,7 +45,28 @@ class OverView extends React.Component {
     });
   };
   render() {
-    if (this.context.todayTweets.data !== undefined) {
+    if (this.context.todayTweets.results !== undefined) {
+      // Get the last item in the array of objects (recent tweets)
+      const recentTweetsKey = Object.keys(this.context.todayTweets.results)[
+        Object.keys(this.context.todayTweets.results).length - 1
+      ];
+      const emotions = this.context.todayTweets.results[recentTweetsKey][0]
+        .emotion.document.emotion;
+
+      //Pie Chart Data
+      const negative = ((emotions.sadness + emotions.anger) * 100).toFixed(0);
+      const positive = (emotions.joy * 100).toFixed(0);
+      const neutral = ((emotions.fear + emotions.disgust) * 100).toFixed(0);
+      const data = {
+        datasets: [
+          {
+            data: [positive, negative, neutral],
+            backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56"],
+            hoverBackgroundColor: ["#36A2EB", "#FF6384", "#FFCE56"],
+          },
+        ],
+      };
+
       return (
         <div className="p-3">
           <Row>
@@ -105,6 +119,34 @@ class OverView extends React.Component {
                         needleColor={"#2c3e50"}
                         textColor={"#d8dee9"}
                       />
+                      {/* Emotions */}
+                      <Row>
+                        <Col>
+                          <FontAwesomeIcon
+                            icon={faSadTear}
+                            style={{ color: "#f39c12" }}
+                            title="Sadness"
+                            className="ml-3 mr-2 cursor-pointer"
+                          />
+                          {"-  " + (emotions.sadness * 100).toFixed(0) + "%"}
+                          <FontAwesomeIcon
+                            icon={faSmileBeam}
+                            title="Joy"
+                            className="mr-2 ml-3 text-success cursor-pointer"
+                          />
+                          {"-  " + (emotions.joy * 100).toFixed(0) + "%"}
+                          <FontAwesomeIcon
+                            icon={faAngry}
+                            title="Anger"
+                            className="mr-2 ml-3 text-danger cursor-pointer"
+                          />
+                          {"-  " + (emotions.anger * 100).toFixed(0) + "%"}
+                          {/* <FontAwesomeIcon icon={faSadTear} className="mr-2" />
+                          {"-  " + (emotions.sadness * 100).toFixed(0) + "%"}
+                          <FontAwesomeIcon icon={faSadTear} className="mr-2" />
+                          {"-  " + (emotions.sadness * 100).toFixed(0) + "%"} */}
+                        </Col>
+                      </Row>
                     </Col>
                     <Col>
                       <div className="score">
@@ -129,27 +171,39 @@ class OverView extends React.Component {
                   <Doughnut data={data} className="piechart" />
                   <div className="breakdown-score mt-2 ml-2">
                     <Row className="mt-4 ml-2 ">
-                      <p className=" ml-3 mr-4">
-                        <FontAwesomeIcon
-                          icon={faThumbsUp}
-                          className="mr-1 positive"
-                        />{" "}
-                        - 77%
-                      </p>
-                      <p>
-                        <FontAwesomeIcon
-                          icon={faThumbsDown}
-                          className="mr-2 negative"
-                        />
-                        - 28%
-                      </p>
-                      <p className="ml-4">
-                        <FontAwesomeIcon
-                          icon={faHandPointRight}
-                          className="mr-2 neutral"
-                        />
-                        - 2%
-                      </p>
+                      <div>
+                        <p className=" ml-3 mr-4">
+                          <FontAwesomeIcon
+                            icon={faThumbsUp}
+                            title="Positive"
+                            className="mr-1 positive"
+                          />{" "}
+                          - {positive + "%"}
+                        </p>
+                        <p className="small-text ml-3">{"( positive )"}</p>
+                      </div>
+                      <div>
+                        <p>
+                          <FontAwesomeIcon
+                            icon={faThumbsDown}
+                            title="Negative"
+                            className="mr-2 negative"
+                          />
+                          - {negative + "%"}
+                        </p>
+                        <p className="small-text ml-1">{"( negative )"}</p>
+                      </div>
+                      <div>
+                        <p className="ml-4">
+                          <FontAwesomeIcon
+                            title="Neutral"
+                            icon={faHandPointRight}
+                            className="mr-2 neutral"
+                          />
+                          - {neutral + "%"}
+                        </p>
+                        <p className="small-text ml-4">{"( neutral )"}</p>
+                      </div>
                     </Row>
                   </div>
                 </div>
@@ -201,8 +255,8 @@ class OverView extends React.Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {this.context.todayTweets.data[0].data
-                    .slice(0, 5)
+                  {this.context.todayTweets.results[recentTweetsKey]
+                    .slice(2, 7)
                     .map((tweet, index) => {
                       return (
                         <tr key={index}>
@@ -225,38 +279,25 @@ class OverView extends React.Component {
                   <tr>
                     <th>#</th>
                     <th>Username</th>
-                    <th>No Of Tweets</th>
-                    <th>No Of Likes</th>
+                    <th>Tweets</th>
+                    <th>Likes</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>@mdo</td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>@fat</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td colSpan="2">Larry the Bird</td>
-                    <td>@twitter</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td colSpan="2">Larry the Bird</td>
-                    <td>@twitter</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td colSpan="2">Larry the Bird</td>
-                    <td>@twitter</td>
-                  </tr>
+                  {Object.keys(this.context.todayTweets.topInfluencers)
+                    .slice(0, 5)
+                    .map((key, index) => {
+                      const influencer = this.context.todayTweets
+                        .topInfluencers;
+                      return (
+                        <tr key={key}>
+                          <td>{index + 1}</td>
+                          <td>{"@" + key}</td>
+                          <td>{influencer[key]["tweetCount"]}</td>
+                          <td>{influencer[key]["favouriteCount"]}</td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </Table>
             </Col>

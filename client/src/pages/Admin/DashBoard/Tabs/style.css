@@ -38,3 +38,7 @@
 .cursor-pointer{
     cursor: pointer;
 }
+.small-text{
+    margin-top:-12px;
+    font-size:12px;
+}

@@ -38,7 +38,6 @@ class Home extends React.Component {
     axios
       .get(`${Constants.FLASK_SERVER_ENDPOINT}/api/getTweetsByDate`)
       .then((res) => {
-        console.log(res.data);
         this.context.updateTodayTweets(res.data);
       });
   };
