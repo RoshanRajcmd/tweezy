@@ -35,3 +35,6 @@
 .neutral{
     color:#f1c40f
 }
+.cursor-pointer{
+    cursor: pointer;
+}

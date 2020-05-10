@@ -36,7 +36,7 @@ class Header extends React.Component {
                 placeholder="Search"
               ></Form.Control>
             </div>
-            <h5 className="recruiterName mr-3">Recruiter Name</h5>
+            <h5 className="recruiterName mr-3">Admin Name</h5>
             <FontAwesomeIcon icon={faBars} className="icon" />
           </Navbar.Collapse>
 

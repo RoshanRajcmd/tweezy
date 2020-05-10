@@ -12,13 +12,8 @@ import "./Home.css";
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faPlusCircle,
   faChartBar,
-  faBoxOpen,
-  faStreetView,
-  faMoneyBillAlt,
   faInfoCircle,
-  faShoppingCart,
   faUserTie,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -27,7 +22,31 @@ import Header from "./components/Header/Header";
 
 // Tabs
 import OverView from "./Tabs/Overview.js";
+
+// Constants
+import Constants from "../../../constants/Constants";
+
+// Axios
+import axios from "axios";
+
+// Context
+import Context from "../../../context/Context";
+
 class Home extends React.Component {
+  // Get all today's tweets
+  getLiveTweets = () => {
+    axios
+      .get(`${Constants.FLASK_SERVER_ENDPOINT}/api/getTweetsByDate`)
+      .then((res) => {
+        console.log(res.data);
+        this.context.updateTodayTweets(res.data);
+      });
+  };
+
+  componentDidMount() {
+    // Get the tweets when the page is loaded
+    this.getLiveTweets();
+  }
   render() {
     return (
       <div>
@@ -83,5 +102,5 @@ class Home extends React.Component {
     );
   }
 }
-
+Home.contextType = Context;
 export default Home;
