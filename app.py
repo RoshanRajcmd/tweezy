@@ -2,11 +2,22 @@ import os
 import json
 import datetime
 import random
+import re, string
 from bson import json_util
 from collections import Counter
 
 from dotenv import load_dotenv
 load_dotenv()
+
+# NLTK
+import joblib
+import nltk
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.corpus import twitter_samples, stopwords
+from nltk.tag import pos_tag
+from nltk.tokenize import word_tokenize
+from nltk import FreqDist, classify, NaiveBayesClassifier
+
 
 # Tweepy
 import tweepy
@@ -44,10 +55,12 @@ access_token_secret = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
 toneAnalyzerAPIKey = IAMAuthenticator(os.getenv("TONE_ANALYZER_API_KEY"))
 nluAPIKey = IAMAuthenticator(os.getenv("NLU_API_KEY"))
 
+# Tone Analyzer
 tone_analyzer = ToneAnalyzerV3(
     version='2017-09-21',
     authenticator=toneAnalyzerAPIKey
 )
+# NLU
 natural_language_understanding = NaturalLanguageUnderstandingV1(
     version='2019-07-12',
     authenticator=nluAPIKey
@@ -75,48 +88,111 @@ auth_api=API(auth)
 currentDate = str(datetime.datetime.now()).split(" ")[0]
 currentTime = str(datetime.datetime.now()).split(" ")[1]
 currentTimeStamp = datetime.datetime.now()
-limit = random.randrange(600,610)
+currentTimeStampHour = currentTimeStamp.hour
 
-if currentTimeStamp.hour < 8:
-    startTimeStampHour = 0
-    startTimeStampDay = currentTimeStamp.day  
-else:
-    startTimeStampHour = currentTimeStamp.hour - 8
-    startTimeStampDay = currentTimeStamp.day 
+# # Dev
+# startTimeStampHour  = 20
+# currentTimeStampHour = 23
+
+limit = random.randrange(600,650)
 
 
-########### HELPER FUNCTIONS ##########
+
+
+################## HELPER FUNCTIONS FOR MODEL #####################
+def removeNoise(tweetTokens, stop_words = ()):
+
+    cleanedTokens = []
+
+    for token, tag in pos_tag(tweetTokens):
+        token = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+#]|[!*\(\),]|'\
+                       '(?:%[0-9a-fA-F][0-9a-fA-F]))+','', token)
+        token = re.sub("(@[A-Za-z0-9_]+)","", token)
+
+        if tag.startswith("NN"):
+            pos = 'n'
+        elif tag.startswith('VB'):
+            pos = 'v'
+        else:
+            pos = 'a'
+
+        lemmatizer = WordNetLemmatizer()
+        token = lemmatizer.lemmatize(token, pos)
+
+        if len(token) > 0 and token not in string.punctuation and token.lower() not in stop_words:
+            cleanedTokens.append(token.lower())
+    return cleanedTokens
+
+def getAllWords(cleanedTokensList):
+    for tokens in cleanedTokensList:
+        for token in tokens:
+            yield token
+
+def getTweetsForModel(cleanedTokensList):
+    for tweetTokens in cleanedTokensList:
+        yield dict([token, True] for token in tweetTokens)
+
+
+# Function to merge two dictionaires
 def Merge(dict1 ,dict2):
     res  = Counter(dict1) + Counter(dict2) 
     return res
+
+
+if currentTimeStampHour < 8:
+    startTimeStampHour = 0
+    startTimeStampDay = currentTimeStamp.day  
+else:
+    startTimeStampHour = currentTimeStampHour - 8
+    startTimeStampDay = currentTimeStamp.day 
+
 
 ############### ROUTES ################
 # Collect tweets from a hashtag
 @app.route('/api/getTweets',methods=['GET',"POST"])
 def getTweets():
 
-    startTime = datetime.datetime(currentTimeStamp.year, currentTimeStamp.month, startTimeStampDay, startTimeStampHour, currentTimeStamp.minute, currentTimeStamp.second)
-    endTime = datetime.datetime(currentTimeStamp.year, currentTimeStamp.month, currentTimeStamp.day, currentTimeStamp.hour, currentTimeStamp.minute, currentTimeStamp.second)
+    # # Dev
+    # startTime = datetime.datetime(2020, 5, 10, 8, 0 ,0)
+    # endTime = datetime.datetime(2020, 5, 10, 23, 0 ,0)
 
+    # Custom Modal to predict the sentiment of each text
+    modal = joblib.load('model.pkl')
+
+    startTime = datetime.datetime(currentTimeStamp.year, currentTimeStamp.month, startTimeStampDay, startTimeStampHour, currentTimeStamp.minute, currentTimeStamp.second)
+    endTime = datetime.datetime(currentTimeStamp.year, currentTimeStamp.month, currentTimeStamp.day, currentTimeStampHour, currentTimeStamp.minute, currentTimeStamp.second)
+ 
+   
     # Variables to store resultant data
     posts = {"date" : currentDate, "hashtags":{}, "results":{}}
-    posts["results"][str(startTimeStampHour) + "-" + str(currentTimeStamp.hour)] = []
+    posts["results"][str(startTimeStampHour) + "-" + str(currentTimeStampHour)] = []
     hashtagsCounter = {}
 
 
     count = 0
+    
+    positiveCounter = 0
+    negativeCounter = 0
     # Get the tweets from a particular hashtag
     for tweet in tweepy.Cursor(auth_api.search,q="#lockdown",count=200,
                             lang="en",geocode="22.9734,78.6569,1000km").items():
         tweets = ""
-
+        print(count)
         # Collect the tweets for the past 6 hrs
         if tweet.created_at < endTime and tweet.created_at > startTime:
 
+            # Predictions
+            customTokens = removeNoise(word_tokenize(tweet.text))
+            prediction = modal.classify(dict([token, True] for token in customTokens))
+            
+            if str(prediction) == "Positive": positiveCounter += 1
+            elif str(prediction) == "Negative": negativeCounter += 1
+
             tweets += tweet.text + "\n"            
             data = {
-                "id":tweet.id,
-                "text":tweet.text,
+                "id" : tweet.id,
+                "text" : tweet.text,
+                "prediction" : prediction,
                 "screenName" : tweet.user.screen_name,
                 "followersCount":tweet.user.followers_count,
                 "profilePicURL" : tweet.user.profile_image_url,
@@ -134,7 +210,7 @@ def getTweets():
             except:
                 pass
             
-            posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStamp.hour)].append(data)
+            posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)].append(data)
 
             # Calculate the frequency of the hashtags 
             for data in tweet.entities["hashtags"]:
@@ -163,8 +239,10 @@ def getTweets():
     # Find the sentiment, emotions and keywords
     sentimentAnalysis = natural_language_understanding.analyze(text = tweets,features=Features(sentiment=SentimentOptions(),emotion=EmotionOptions(),keywords=KeywordsOptions(sentiment=True,emotion=True,limit=2))).get_result()
     
-    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStamp.hour)][0] = sentimentAnalysis
-    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStamp.hour)][1] = toneAnalysis
+    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][0] = sentimentAnalysis
+    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][1] = toneAnalysis
+    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][0]["positiveCount"] = positiveCounter
+    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][0]["negativeCount"] = negativeCounter
 
     # Write results to the file
     with open('result.json', 'w') as fp:
@@ -182,9 +260,12 @@ def getTweets():
 
         # Update Data in DB
         mongo.db.tweets.update({"date":currentDate},{"$set":{"hashtags": newHashtags}})
-        mongo.db.tweets.update({"date":currentDate},{"$set":{"results." + (str(startTimeStampHour) + "-" + str(currentTimeStamp.hour)) : posts["results"][str(startTimeStampHour) + "-" + str(currentTimeStamp.hour)]}})
+        mongo.db.tweets.update({"date":currentDate},{"$set":{"results." + (str(startTimeStampHour) + "-" + str(currentTimeStampHour)) : posts["results"][str(startTimeStampHour) + "-" + str(currentTimeStampHour)]}})
     posts = json.dumps(posts, indent=4, default=json_util.default)
     
+    positiveCounter = 0
+    negativeCounter = 0
+
     return posts
 
 # Get tweets by date
@@ -193,7 +274,7 @@ def getTweetsByDate():
     tweets = ""
     size = 0
     topInfluencersCounter = {}
-    res = mongo.db.tweets.find_one({"date":currentDate})
+    res = mongo.db.tweets.find_one({"date":"2020-05-10"})
 
 
     
@@ -217,7 +298,7 @@ def getTweetsByDate():
                     except:
                         pass
         
-        topInfluencersCounter =  {k: v for k, v in reversed(sorted(topInfluencersCounter.items(), key=lambda item: item[1]["favouriteCount"]))}
+        topInfluencersCounter =  {k: v for k, v in reversed(sorted(topInfluencersCounter.items(), key=lambda item: item[1]["tweetCount"]))}
 
         # Add the top 5 hastags in the result
         res["topInfluencers"] = {}         
@@ -244,13 +325,39 @@ def getTweetsByDate():
         if overallSentimentScore < 0 : overallSentimentLabel = "Negative"
         elif overallSentimentScore > 0 : overallSentimentLabel = "Positive"
         else: overallSentimentLabel = "Neutral" 
+        
+        # Calculate average emotion scores
+        counter = {}
+        for result in res["results"]:
+            for emotion in res["results"][result][0]["emotion"]["document"]["emotion"]:
+                emotionsCounter = res["results"][result][0]["emotion"]["document"]["emotion"]
+                if emotion in counter:
+                    counter[emotion] += emotionsCounter[emotion]
+                else:
+                    counter[emotion] = emotionsCounter[emotion]
 
-        res["overallSentimentScore"] = overallSentimentScore
-        res["overallSentimentLabel"] = overallSentimentLabel
+        for emotion in counter:
+            counter[emotion] = (counter[emotion]) / 2
+
+        # Overall calculation (positive, negative, neutral)
+        positive = 0
+        negative = 0
+        for result in res["results"]:
+            positive += res["results"][result][0]["positiveCount"]
+            negative += res["results"][result][0]["negativeCount"]
+
+        overallResults = {"positive" : positive,"negative" : negative}
+
+        res["overAllSentimentScore"] = overallSentimentScore
+        res["overAllSentimentLabel"] = overallSentimentLabel
+        res["overAllEmotions"] = counter
+        res["overAllResults"] = overallResults
 
         return json.dumps(res, indent=4, default=json_util.default)
     else:
         return {}
+
+
 
 if __name__ == '__main__':
     app.run(use_reloader=True, port=5000, threaded=True)

@@ -21,10 +21,10 @@
     margin-left:13px; 
 }
 .final-score{
-    color:#3498db !important;
     font-size: 19px !important;
-    margin-left:15px !important;
+    margin-left:12px !important;
     margin-top:10px !important;
+    letter-spacing: 1px;
 }
 .positive{
     color:#3498db
