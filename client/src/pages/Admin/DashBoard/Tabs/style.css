@@ -42,3 +42,29 @@
     margin-top:-12px;
     font-size:12px;
 }
+.radarChart canvas{
+    width:400px !important
+}
+
+.searchContainer{
+    padding:10px;
+}
+.searchButton{
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
+    border:0px !important;
+}
+.filter-label{
+    color:#34495e;
+    font-size: 12px;
+    font-weight: bold;
+}
+.title-text{
+    color:#34495e;
+    font-size: 15px;
+    margin-top: 10px;
+    margin-bottom:10px;
+}
+.searchButton{
+    margin-top:19px;
+}

@@ -15,14 +15,15 @@ import {
   faChartBar,
   faInfoCircle,
   faUserTie,
+  faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Components
 import Header from "./components/Header/Header";
 
 // Tabs
-import OverView from "./Tabs/Overview.js";
-
+import OverView from "./Tabs/Overview";
+import ShowTweets from "./Tabs/ShowTweets";
 // Constants
 import Constants from "../../../constants/Constants";
 
@@ -35,8 +36,22 @@ import Context from "../../../context/Context";
 class Home extends React.Component {
   // Get all today's tweets
   getLiveTweets = () => {
+    var today = new Date();
+    // var month = (today.getMonth() + 1).toString();
+    // var day = today.getDate().toString();
+    var month = "05";
+    var day = "11";
+    if (month.length == 1) {
+      month = "0" + month;
+    }
+    if (day.length == 1) {
+      day = "0" + day;
+    }
+    var date = today.getFullYear() + "-" + month + "-" + day;
     axios
-      .get(`${Constants.FLASK_SERVER_ENDPOINT}/api/getTweetsByDate`)
+      .post(`${Constants.FLASK_SERVER_ENDPOINT}/api/getTweetsByDate`, {
+        date: date,
+      })
       .then((res) => {
         this.context.updateTodayTweets(res.data);
       });
@@ -50,7 +65,7 @@ class Home extends React.Component {
     return (
       <div>
         <Header />
-        <Tab.Container id="left-tabs-example" defaultActiveKey="overview">
+        <Tab.Container id="left-tabs-example" defaultActiveKey="showTweets">
           <div className="sidenav">
             <div className="sidenav-inner">
               <h5 className="mb-3">NAVIGATION</h5>
@@ -65,12 +80,9 @@ class Home extends React.Component {
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="por" className="inactive-link">
-                    <FontAwesomeIcon
-                      icon={faUserTie}
-                      className="tabIcon mr-2"
-                    />
-                    Show All Tweets
+                  <Nav.Link eventKey="showTweets" className="inactive-link">
+                    <FontAwesomeIcon icon={faSearch} className="tabIcon mr-2" />
+                    Search Tweets
                   </Nav.Link>
                   <Nav.Item>
                     <Nav.Link eventKey="d" className="inactive-link">
@@ -91,6 +103,9 @@ class Home extends React.Component {
                 <Tab.Content>
                   <Tab.Pane eventKey="overview">
                     <OverView />
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="showTweets">
+                    <ShowTweets />
                   </Tab.Pane>
                 </Tab.Content>
               </Col>

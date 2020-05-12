@@ -91,8 +91,8 @@ currentTimeStamp = datetime.datetime.now()
 currentTimeStampHour = currentTimeStamp.hour
 
 # # Dev
-# startTimeStampHour  = 20
-# currentTimeStampHour = 23
+# startTimeStampHour  = 14
+# currentTimeStampHour = 20
 
 limit = random.randrange(600,650)
 
@@ -153,8 +153,8 @@ else:
 def getTweets():
 
     # # Dev
-    # startTime = datetime.datetime(2020, 5, 10, 8, 0 ,0)
-    # endTime = datetime.datetime(2020, 5, 10, 23, 0 ,0)
+    # startTime = datetime.datetime(2020, 5, 11,0, 0 ,0)
+    # endTime = datetime.datetime(2020, 5, 11, 20, 0 ,0)
 
     # Custom Modal to predict the sentiment of each text
     modal = joblib.load('model.pkl')
@@ -164,29 +164,23 @@ def getTweets():
  
    
     # Variables to store resultant data
-    posts = {"date" : currentDate, "hashtags":{}, "results":{}}
+    posts = {"date" : currentDate, "hashtags":{}, "results":{},"mentions":{}}
     posts["results"][str(startTimeStampHour) + "-" + str(currentTimeStampHour)] = []
     hashtagsCounter = {}
-
+    mentionsCounter = {}
 
     count = 0
     
-    positiveCounter = 0
-    negativeCounter = 0
     # Get the tweets from a particular hashtag
     for tweet in tweepy.Cursor(auth_api.search,q="#lockdown",count=200,
                             lang="en",geocode="22.9734,78.6569,1000km").items():
         tweets = ""
-        print(count)
         # Collect the tweets for the past 6 hrs
         if tweet.created_at < endTime and tweet.created_at > startTime:
 
             # Predictions
             customTokens = removeNoise(word_tokenize(tweet.text))
             prediction = modal.classify(dict([token, True] for token in customTokens))
-            
-            if str(prediction) == "Positive": positiveCounter += 1
-            elif str(prediction) == "Negative": negativeCounter += 1
 
             tweets += tweet.text + "\n"            
             data = {
@@ -203,6 +197,7 @@ def getTweets():
                 "date" : str(tweet.created_at).split(" ")[0],
                 "time" : str(tweet.created_at).split(" ")[1]
             }
+            
 
             # Exception handling because some of the posts doesn't have the "possibly_sensitive" attribute
             try:
@@ -219,13 +214,24 @@ def getTweets():
                 else:
                     hashtagsCounter[data["text"].capitalize()] = 0
 
+            for data in tweet.entities["user_mentions"]:
+                if data["screen_name"].capitalize() in mentionsCounter:
+                    mentionsCounter[data["screen_name"].capitalize()] += 1
+                else:
+                    mentionsCounter[data["screen_name"].capitalize()] = 0
+            
             count += 1
             if(count == limit):
                 break
+            
+
+        
 
     # Sort the dictionary by the value
     sortedHashTagsCounter =  {k: v for k, v in reversed(sorted(hashtagsCounter.items(), key=lambda item: item[1]))}
+    sortedMentionsCounter =  {k: v for k, v in reversed(sorted(mentionsCounter.items(), key=lambda item: item[1]))}
 
+    
     # Add the top 5 hastags in the result
     count = 0
     for key in sortedHashTagsCounter:
@@ -233,17 +239,24 @@ def getTweets():
         count += 1
         if count == 5:
             break
+    
+    # Add the top 20 user mentions in the result
+    count = 0
+    for key in sortedMentionsCounter:
+        posts["mentions"][key] = sortedMentionsCounter[key]
+        count += 1
+        if count == 20:
+            break
 
     # Find the tones of the tweets
     toneAnalysis = tone_analyzer.tone({'text': tweets},content_type='application/json').get_result()
     # Find the sentiment, emotions and keywords
     sentimentAnalysis = natural_language_understanding.analyze(text = tweets,features=Features(sentiment=SentimentOptions(),emotion=EmotionOptions(),keywords=KeywordsOptions(sentiment=True,emotion=True,limit=2))).get_result()
     
+   
     posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][0] = sentimentAnalysis
     posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][1] = toneAnalysis
-    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][0]["positiveCount"] = positiveCounter
-    posts["results"][str(startTimeStampHour)+"-"+str(currentTimeStampHour)][0]["negativeCount"] = negativeCounter
-
+   
     # Write results to the file
     with open('result.json', 'w') as fp:
         json.dumps(posts, indent=4, default=json_util.default)
@@ -257,14 +270,14 @@ def getTweets():
     else:
         # Merge the two dictionaries
         newHashtags = Merge(existingData["hashtags"], posts["hashtags"])
+        newMentions = Merge(existingData["mentions"],posts["mentions"])
 
         # Update Data in DB
         mongo.db.tweets.update({"date":currentDate},{"$set":{"hashtags": newHashtags}})
+        mongo.db.tweets.update({"date":currentDate},{"$set":{"mentions": newMentions}})
         mongo.db.tweets.update({"date":currentDate},{"$set":{"results." + (str(startTimeStampHour) + "-" + str(currentTimeStampHour)) : posts["results"][str(startTimeStampHour) + "-" + str(currentTimeStampHour)]}})
     posts = json.dumps(posts, indent=4, default=json_util.default)
     
-    positiveCounter = 0
-    negativeCounter = 0
 
     return posts
 
@@ -274,7 +287,8 @@ def getTweetsByDate():
     tweets = ""
     size = 0
     topInfluencersCounter = {}
-    res = mongo.db.tweets.find_one({"date":"2020-05-10"})
+    date = request.json["date"]
+    res = mongo.db.tweets.find_one({"date":date})
 
 
     
@@ -339,19 +353,10 @@ def getTweetsByDate():
         for emotion in counter:
             counter[emotion] = (counter[emotion]) / 2
 
-        # Overall calculation (positive, negative, neutral)
-        positive = 0
-        negative = 0
-        for result in res["results"]:
-            positive += res["results"][result][0]["positiveCount"]
-            negative += res["results"][result][0]["negativeCount"]
-
-        overallResults = {"positive" : positive,"negative" : negative}
 
         res["overAllSentimentScore"] = overallSentimentScore
         res["overAllSentimentLabel"] = overallSentimentLabel
         res["overAllEmotions"] = counter
-        res["overAllResults"] = overallResults
 
         return json.dumps(res, indent=4, default=json_util.default)
     else:

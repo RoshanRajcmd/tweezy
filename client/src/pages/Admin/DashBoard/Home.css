@@ -7,8 +7,7 @@
     left: 0;
     background-color: #394061;
     overflow-x: hidden;
-    padding-top: 20px;
-    margin-top: 60px;
+    padding-top: 80px;
     padding-left:10px;
 }
 
@@ -35,5 +34,6 @@
 }
 .main-content{
     margin-left:250px;
+    margin-top:60px;
     background-color: #efefef;
 }

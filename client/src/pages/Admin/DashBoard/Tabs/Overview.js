@@ -1,7 +1,7 @@
 import React from "react";
 
 // Bootstrap Components
-import { Row, Col, Table } from "react-bootstrap";
+import { Row, Col, Table, Button } from "react-bootstrap";
 
 // StyleSheet
 import "./style.css";
@@ -12,13 +12,9 @@ import ReactSpeedometer from "react-d3-speedometer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSmile,
-  faThumbsUp,
-  faThumbsDown,
-  faHandPointRight,
   faRetweet,
   faHashtag,
   faUserAlt,
-  faSadCry,
   faSadTear,
   faSmileBeam,
   faAngry,
@@ -31,18 +27,26 @@ import { HorizontalBar } from "react-chartjs-2";
 // Context
 import Context from "../../../../context/Context";
 import ShowHashTags from "../components/Header/Modal/ShowHashTags";
+import RadarModal from "../components/Header/Modal/RadarModal";
 
 class OverView extends React.Component {
   constructor() {
     super();
     this.state = {
       isShowHashTagsModalOpen: false,
+      isRadarModalOpen: false,
     };
   }
 
   showHashTagsModal = () => {
     this.setState({
       isShowHashTagsModalOpen: true,
+    });
+  };
+
+  showRadarModal = () => {
+    this.setState({
+      isRadarModalOpen: true,
     });
   };
 
@@ -127,6 +131,62 @@ class OverView extends React.Component {
         ],
       };
 
+      const randomColors = [
+        {
+          backgroundColor: "rgba(44, 62, 80,0.2)",
+          borderColor: "rgb(52, 73, 94)",
+          pointBackgroundColor: "rgb(52, 73, 94)",
+          pointHoverBorderColor: "rgba(179,181,198,1)",
+        },
+        {
+          backgroundColor: "rgba(255,99,132,0.2)",
+          borderColor: "rgba(255,99,132,1)",
+          pointBackgroundColor: "rgba(255,99,132,1)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(255,99,132,1)",
+        },
+        {
+          backgroundColor: "rgba(41, 128, 185,0.2)",
+          borderColor: "rgb(52, 152, 219)",
+          pointBackgroundColor: "rgb(52, 152, 219)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(255,99,132,1)",
+        },
+      ];
+      var dataset = [];
+      {
+        Object.keys(this.context.todayTweets.results).map((key, index) => {
+          var data = this.context.todayTweets.results[key];
+          var result = {};
+          var emotions = data[0].emotion.document.emotion;
+          result["label"] = key;
+          result["backgroundColor"] = randomColors[index].backgroundColor;
+          result["borderColor"] = randomColors[index].borderColor;
+          result["pointBackgroundColor"] =
+            randomColors[index].pointBackgroundColor;
+          result["pointBorderColor"] = "#fff";
+          result["pointHoverBackgroundColor"] = "#fff";
+          result["pointHoverBorderColor"] =
+            randomColors[index].pointHoverBackgroundColor;
+          result["data"] = [
+            (emotions.sadness * 100).toFixed(0),
+            (emotions.joy * 100).toFixed(0),
+            (emotions.fear * 100).toFixed(0),
+            (emotions.anger * 100).toFixed(0),
+            (emotions.disgust * 100).toFixed(0),
+          ];
+          dataset.push(result);
+        });
+      }
+
+      const radarChartData = {
+        labels: ["Sadness", "Joy", "Fear", "Anger", "Disgust"],
+
+        datasets: dataset,
+      };
+
       const date = Date().split(" ");
       return (
         <div className="p-3">
@@ -189,30 +249,18 @@ class OverView extends React.Component {
                         needleTransitionDuration={3333}
                         needleTransition="easeElastic"
                         needleColor={"#2c3e50"}
-                        textColor={"#d8dee9"}
+                        textColor={"#fff"}
                       />
-                      {/* Emotions */}
                       <Row>
                         <Col>
-                          <FontAwesomeIcon
-                            icon={faSadTear}
-                            style={{ color: "#f39c12" }}
-                            title="Sadness"
-                            className="ml-3 mr-2 cursor-pointer"
-                          />
-                          {"-  " + emotions.sadness.toFixed(2)}
-                          <FontAwesomeIcon
-                            icon={faSmileBeam}
-                            title="Joy"
-                            className="mr-2 ml-3 text-success cursor-pointer"
-                          />
-                          {"-  " + emotions.joy.toFixed(2)}
-                          <FontAwesomeIcon
-                            icon={faAngry}
-                            title="Anger"
-                            className="mr-2 ml-3 text-danger cursor-pointer"
-                          />
-                          {"-  " + emotions.anger.toFixed(2)}
+                          <Button
+                            size="sm"
+                            className="mr-2"
+                            onClick={this.showRadarModal}
+                          >
+                            Show variations
+                          </Button>
+                          <Button size="sm">Open Map</Button>
                         </Col>
                       </Row>
                     </Col>
@@ -251,6 +299,30 @@ class OverView extends React.Component {
                 </div>
                 <div className="card-content piechart-container">
                   <HorizontalBar data={data} />
+                  {/* Emotions */}
+                  <Row className="mt-3">
+                    <Col>
+                      <FontAwesomeIcon
+                        icon={faSadTear}
+                        style={{ color: "#f39c12" }}
+                        title="Sadness"
+                        className="ml-3 mr-2 cursor-pointer"
+                      />
+                      {"-  " + emotions.sadness.toFixed(2)}
+                      <FontAwesomeIcon
+                        icon={faSmileBeam}
+                        title="Joy"
+                        className="mr-2 ml-3 text-success cursor-pointer"
+                      />
+                      {"-  " + emotions.joy.toFixed(2)}
+                      <FontAwesomeIcon
+                        icon={faAngry}
+                        title="Anger"
+                        className="mr-2 ml-3 text-danger cursor-pointer"
+                      />
+                      {"-  " + emotions.anger.toFixed(2)}
+                    </Col>
+                  </Row>
                 </div>
               </div>
             </Col>
@@ -346,6 +418,32 @@ class OverView extends React.Component {
                 </tbody>
               </Table>
             </Col>
+            <Col>
+              <h5 className="small font-weight-bold">Top Mentions</h5>
+              <Table striped bordered hover size="sm" variant="dark">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>No of mentions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(this.context.todayTweets.mentions)
+                    .slice(0, 5)
+                    .map((key, index) => {
+                      const mentions = this.context.todayTweets.mentions;
+                      return (
+                        <tr key={key}>
+                          <td>{index + 1}</td>
+                          <td>{"@" + key}</td>
+                          <td>{mentions[key]}</td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </Table>
+            </Col>
           </Row>
 
           {/* Modal */}
@@ -354,6 +452,17 @@ class OverView extends React.Component {
             handleClose={() => {
               this.setState({
                 isShowHashTagsModalOpen: false,
+              });
+            }}
+          />
+
+          {/* Radar Chart Modal */}
+          <RadarModal
+            data={radarChartData}
+            isOpen={this.state.isRadarModalOpen}
+            handleClose={() => {
+              this.setState({
+                isRadarModalOpen: false,
               });
             }}
           />

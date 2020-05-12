@@ -1,6 +1,10 @@
 .navbar{
     background-color: #7780c8;
     padding:0 !important;
+    position: fixed !important;
+    top:0 !important;
+    left : 0 !important;
+    width:100% !important;
 }
 
 .navbar-bg-light{
