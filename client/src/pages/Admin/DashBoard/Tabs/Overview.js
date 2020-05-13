@@ -28,6 +28,7 @@ import { HorizontalBar } from "react-chartjs-2";
 import Context from "../../../../context/Context";
 import ShowHashTags from "../components/Header/Modal/ShowHashTags";
 import RadarModal from "../components/Header/Modal/RadarModal";
+import ShowMap from "../components/Header/Modal/ShowMap";
 
 class OverView extends React.Component {
   constructor() {
@@ -35,8 +36,15 @@ class OverView extends React.Component {
     this.state = {
       isShowHashTagsModalOpen: false,
       isRadarModalOpen: false,
+      isMapModalOpen: true,
     };
   }
+
+  showMap = () => {
+    this.setState({
+      isMapModalOpen: true,
+    });
+  };
 
   showHashTagsModal = () => {
     this.setState({
@@ -260,7 +268,9 @@ class OverView extends React.Component {
                           >
                             Show variations
                           </Button>
-                          <Button size="sm">Open Map</Button>
+                          <Button size="sm" onClick={this.showMap}>
+                            Open Map
+                          </Button>
                         </Col>
                       </Row>
                     </Col>
@@ -463,6 +473,16 @@ class OverView extends React.Component {
             handleClose={() => {
               this.setState({
                 isRadarModalOpen: false,
+              });
+            }}
+          />
+
+          {/* Map Modal */}
+          <ShowMap
+            isOpen={this.state.isMapModalOpen}
+            handleClose={() => {
+              this.setState({
+                isMapModalOpen: false,
               });
             }}
           />

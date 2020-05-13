@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import random
+import requests
 import re, string
 from bson import json_util
 from collections import Counter
@@ -85,13 +86,13 @@ auth_api=API(auth)
 
 
 # Global Variables
-currentDate = str(datetime.datetime.now()).split(" ")[0]
+currentDate = str(datetime.datetime.now()).split(" ")[0]  
 currentTime = str(datetime.datetime.now()).split(" ")[1]
 currentTimeStamp = datetime.datetime.now()
 currentTimeStampHour = currentTimeStamp.hour
 
 # # Dev
-# startTimeStampHour  = 14
+# startTimeStampHour  = 16
 # currentTimeStampHour = 20
 
 limit = random.randrange(600,650)
@@ -153,8 +154,8 @@ else:
 def getTweets():
 
     # # Dev
-    # startTime = datetime.datetime(2020, 5, 11,0, 0 ,0)
-    # endTime = datetime.datetime(2020, 5, 11, 20, 0 ,0)
+    # startTime = datetime.datetime(2020, 5, 12,0, 0 ,0)
+    # endTime = datetime.datetime(2020, 5, 12, 20, 0 ,0)
 
     # Custom Modal to predict the sentiment of each text
     modal = joblib.load('model.pkl')
@@ -354,13 +355,60 @@ def getTweetsByDate():
             counter[emotion] = (counter[emotion]) / 2
 
 
+        locationCounter = {}
+
+        # get the locations with positive and negative count
+        for result in res["results"]:
+            for tweet in res["results"][result]:
+                try:
+                    if tweet["location"] in locationCounter:
+                        if tweet["prediction"] == "Positive":
+                            locationCounter[tweet["location"]]["positive"] += 1
+                        elif tweet["prediction"] == "Negative":
+                            locationCounter[tweet["location"]]["negative"] += 1
+                    else:
+                        locationCounter[tweet["location"]] = {"positive":0,"negative":0}
+                        if tweet["prediction"] == "Positive":
+                            locationCounter[tweet["location"]]["positive"] = 1
+                        elif tweet["prediction"] == "Negative":
+                            locationCounter[tweet["location"]]["negative"] = 1
+                except:
+                    pass
+
+                
         res["overAllSentimentScore"] = overallSentimentScore
         res["overAllSentimentLabel"] = overallSentimentLabel
         res["overAllEmotions"] = counter
-
+        res["locations"] = locationCounter
         return json.dumps(res, indent=4, default=json_util.default)
     else:
         return {}
+
+# Get all tweets in the database
+@app.route('/api/getAllTweets',methods=['GET'])
+def getAllTweets():
+    results = mongo.db.tweets.find({})
+    counter = {}
+
+    for res in results:
+        counter[res["date"]] = {}
+        count  = 0
+        # Calculate average emotion scores
+        for key in res["results"]:
+            count += 1
+            for emotion in res["results"][key][0]["emotion"]["document"]["emotion"]:
+                if emotion in counter[res["date"]]:
+                    counter[res["date"]][emotion] += res["results"][key][0]["emotion"]["document"]["emotion"][emotion]
+                else:
+                    counter[res["date"]][emotion] = res["results"][key][0]["emotion"]["document"]["emotion"][emotion] 
+
+        counter[res["date"]]["sadness"] = counter[res["date"]]["sadness"] / count
+        counter[res["date"]]["joy"] = counter[res["date"]]["joy"] / count     
+        counter[res["date"]]["anger"] = counter[res["date"]]["anger"] / count     
+        counter[res["date"]]["disgust"] = counter[res["date"]]["disgust"] / count     
+        counter[res["date"]]["fear"] = counter[res["date"]]["fear"] / count     
+
+    return json.dumps(counter, indent=4, default=json_util.default)
 
 
 

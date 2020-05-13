@@ -16,6 +16,7 @@ import {
   faInfoCircle,
   faUserTie,
   faSearch,
+  faBalanceScale,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Components
@@ -24,6 +25,8 @@ import Header from "./components/Header/Header";
 // Tabs
 import OverView from "./Tabs/Overview";
 import ShowTweets from "./Tabs/ShowTweets";
+import History from "./Tabs/History";
+
 // Constants
 import Constants from "../../../constants/Constants";
 
@@ -40,7 +43,7 @@ class Home extends React.Component {
     // var month = (today.getMonth() + 1).toString();
     // var day = today.getDate().toString();
     var month = "05";
-    var day = "11";
+    var day = "12";
     if (month.length == 1) {
       month = "0" + month;
     }
@@ -65,7 +68,7 @@ class Home extends React.Component {
     return (
       <div>
         <Header />
-        <Tab.Container id="left-tabs-example" defaultActiveKey="showTweets">
+        <Tab.Container id="left-tabs-example" defaultActiveKey="overview">
           <div className="sidenav">
             <div className="sidenav-inner">
               <h5 className="mb-3">NAVIGATION</h5>
@@ -85,12 +88,21 @@ class Home extends React.Component {
                     Search Tweets
                   </Nav.Link>
                   <Nav.Item>
-                    <Nav.Link eventKey="d" className="inactive-link">
+                    <Nav.Link eventKey="history" className="inactive-link">
                       <FontAwesomeIcon
                         icon={faChartBar}
                         className="tabIcon mr-2"
                       />
                       History
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="predict" className="inactive-link">
+                      <FontAwesomeIcon
+                        icon={faBalanceScale}
+                        className="tabIcon mr-2"
+                      />
+                      Predict
                     </Nav.Link>
                   </Nav.Item>
                 </Nav.Item>
@@ -106,6 +118,9 @@ class Home extends React.Component {
                   </Tab.Pane>
                   <Tab.Pane eventKey="showTweets">
                     <ShowTweets />
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="history">
+                    <History />
                   </Tab.Pane>
                 </Tab.Content>
               </Col>

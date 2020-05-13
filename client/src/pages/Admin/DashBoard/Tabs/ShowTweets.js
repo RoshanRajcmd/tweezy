@@ -169,7 +169,8 @@ class ShowTweets extends React.Component {
     return (
       <div>
         <div className="searchContainer">
-          <Row className="searchWrapper">
+          <h5 className="header-text">Search Tweets</h5>
+          <Row className="searchWrapper border border-muted m-2">
             <Col md={3} className="pt-2">
               <Form.Label className="filter-label">SELECT DATE</Form.Label>
               <Form.Control
@@ -210,15 +211,11 @@ class ShowTweets extends React.Component {
 
           <div className="mt-2 ml-2 mr-4">
             {this.state.data.results !== undefined &&
-            !this.state.searchResultsIsOpen ? (
-              this.renderTable(this.state.data.results[recentTweetsKey])
-            ) : this.state.searchResultsIsOpen ? (
-              this.renderTable(this.state.searchResults)
-            ) : (
-              <center>
-                <p>Loading ......</p>
-              </center>
-            )}
+            !this.state.searchResultsIsOpen
+              ? this.renderTable(this.state.data.results[recentTweetsKey])
+              : this.state.searchResultsIsOpen
+              ? this.renderTable(this.state.searchResults)
+              : null}
           </div>
         </div>
       </div>
