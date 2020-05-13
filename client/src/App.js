@@ -15,6 +15,7 @@ class App extends React.Component {
     super();
     this.state = {
       todayTweets: {},
+      markerData: [],
     };
   }
 
@@ -24,10 +25,26 @@ class App extends React.Component {
       todayTweets: data,
     });
   };
+
+  // Set marker data
+  setMarkerData = (data) => {
+    this.setState({
+      markerData: data,
+    });
+  };
+  // sleep function
+  sleep = (milliseconds) => {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+  };
   render() {
     return (
       <Context.Provider
-        value={{ ...this.state, updateTodayTweets: this.updateTodayTweets }}
+        value={{
+          ...this.state,
+          updateTodayTweets: this.updateTodayTweets,
+          setMarkerData: this.setMarkerData,
+          sleep: this.sleep,
+        }}
       >
         <div>
           <Router>

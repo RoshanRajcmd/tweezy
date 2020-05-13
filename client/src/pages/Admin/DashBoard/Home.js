@@ -37,13 +37,20 @@ import axios from "axios";
 import Context from "../../../context/Context";
 
 class Home extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      markerData: [],
+    };
+  }
+
   // Get all today's tweets
   getLiveTweets = () => {
     var today = new Date();
     // var month = (today.getMonth() + 1).toString();
     // var day = today.getDate().toString();
     var month = "05";
-    var day = "12";
+    var day = "13";
     if (month.length == 1) {
       month = "0" + month;
     }
@@ -57,9 +64,28 @@ class Home extends React.Component {
       })
       .then((res) => {
         this.context.updateTodayTweets(res.data);
+        // this.getCoordinatesForLocations();
       });
   };
 
+  getCoordinatesForLocations = () => {
+    var tempData = this.context.todayTweets.locations;
+    Object.keys(tempData).map((val) => {
+      axios
+        .post(`${Constants.FLASK_SERVER_ENDPOINT}/api/getCoordinates`, {
+          name: val,
+        })
+        .then((res) => {
+          if (res.data.Latitude !== undefined) {
+            tempData[val]["position"] = res.data;
+            this.setState({
+              markerData: tempData,
+            });
+            this.context.setMarkerData(tempData);
+          }
+        });
+    });
+  };
   componentDidMount() {
     // Get the tweets when the page is loaded
     this.getLiveTweets();

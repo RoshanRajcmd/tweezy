@@ -7,6 +7,10 @@ import re, string
 from bson import json_util
 from collections import Counter
 
+# BS4
+from urllib.request import Request, urlopen
+from bs4 import BeautifulSoup as soup
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -93,7 +97,7 @@ currentTimeStampHour = currentTimeStamp.hour
 
 # # Dev
 # startTimeStampHour  = 16
-# currentTimeStampHour = 20
+# currentTimeStampHour = 23
 
 limit = random.randrange(600,650)
 
@@ -154,8 +158,8 @@ else:
 def getTweets():
 
     # # Dev
-    # startTime = datetime.datetime(2020, 5, 12,0, 0 ,0)
-    # endTime = datetime.datetime(2020, 5, 12, 20, 0 ,0)
+    # startTime = datetime.datetime(2020, 5, 13,12, 0 ,0)
+    # endTime = datetime.datetime(2020, 5, 13, 20, 0 ,0)
 
     # Custom Modal to predict the sentiment of each text
     modal = joblib.load('model.pkl')
@@ -361,6 +365,7 @@ def getTweetsByDate():
         for result in res["results"]:
             for tweet in res["results"][result]:
                 try:
+                    tweet["location"] = tweet["location"].lower()
                     if tweet["location"] in locationCounter:
                         if tweet["prediction"] == "Positive":
                             locationCounter[tweet["location"]]["positive"] += 1
@@ -410,6 +415,17 @@ def getAllTweets():
 
     return json.dumps(counter, indent=4, default=json_util.default)
 
+@app.route('/api/getCoordinates',methods=['GET',"POST"])
+def getCoordinates():
+    city = request.json["name"]
+    req = requests.get("https://geocoder.ls.hereapi.com/6.2/geocode.json?searchtext="+city+"&gen=9&apiKey=Omfb3D_6gnrF9h7r_TsQAyFJrj47fZcbqIeN41Uxxxw")
+    data = req.json()
+    try:
+        result = data["Response"]["View"][0]["Result"][0]["Location"]["DisplayPosition"]
+    except:
+        result = {}
+    
+    return result
 
 
 if __name__ == '__main__':

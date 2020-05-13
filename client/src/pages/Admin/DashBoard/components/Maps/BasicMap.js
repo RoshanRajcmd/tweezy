@@ -8,16 +8,11 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
+// Context
+import Context from "../../../../../context/Context";
+
 const MAPBOX_TOKEN =
   "pk.eyJ1Ijoic2hyaXNhcmFucmFqIiwiYSI6ImNrOHlhanJoeDAwODkza2w3cGpsMGw5YjEifQ.GuuUnBze_nbTo6raeeYZ1g"; // Set your mapbox token here
-
-const markerList = [
-  { lat: 17.441013, long: 78.391796, name: "ABC Hospitals", info: 10 },
-
-  { lat: 17.442889, long: 78.396873, name: "XYZ Hospitals", info: 20 },
-
-  { lat: 17.441681, long: 78.394357, name: "NRI Hospitals", info: 10 },
-];
 
 class Map extends React.Component {
   constructor() {
@@ -30,24 +25,25 @@ class Map extends React.Component {
         longitude: 78.9629,
         zoom: 3,
       },
+      popupInfo: null,
     };
   }
 
-  renderPopup(index) {
+  renderPopup(key) {
     return (
       this.state.popupInfo && (
         <Popup
           tipSize={5}
           anchor="bottom-right"
-          longitude={markerList[index].long}
-          latitude={markerList[index].lat}
+          longitude={this.context.markerData[key].position.Longitude}
+          latitude={this.context.markerData[key].position.Latitude}
           onMouseLeave={() => this.setState({ popupInfo: null })}
           closeOnClick={true}
         >
           <p>
-            <strong>{markerList[index].name}</strong>
+            <strong>{this.context.markerData[key].negative}</strong>
             <br />
-            Available beds:{markerList[index].info}
+            Positive:{this.context.markerData[key].positive}
           </p>
         </Popup>
       )
@@ -56,9 +52,10 @@ class Map extends React.Component {
   _updateViewport = (viewport) => {
     this.setState({ viewport });
   };
-  render() {
-    const { viewport } = this.state;
 
+  render() {
+    console.log(this.context.markerData);
+    const { viewport } = this.state;
     return (
       <div>
         <ReactMapGL
@@ -73,10 +70,40 @@ class Map extends React.Component {
             <NavigationControl
               onViewportChange={(viewport) => this.setState({ viewport })}
             />
-            {markerList.map((marker, index) => {
+            {Object.keys(this.context.markerData).map((key, index) => {
+              const marker = this.context.markerData[key];
+              if (marker.position !== undefined) {
+                var color;
+                if (marker.positive > marker.negative) color = "text-success";
+                else if (marker.negative > marker.positive)
+                  color = "text-danger";
+                else color = "text-warning";
+                return (
+                  <div key={key}>
+                    <Marker
+                      longitude={marker.position.Longitude}
+                      latitude={marker.position.Latitude}
+                    >
+                      <FontAwesomeIcon
+                        icon={faMapMarkerAlt}
+                        className={`${color}`}
+                        style={{ fontSize: 20 }}
+                        onMouseEnter={() => this.setState({ popupInfo: true })}
+                        onMouseLeave={() => this.setState({ popupInfo: null })}
+                      />
+                    </Marker>
+                    {this.renderPopup(key)}
+                  </div>
+                );
+              }
+            })}
+            {/* {markerData.map((marker, index) => {
               return (
                 <div key={index}>
-                  <Marker longitude={marker.long} latitude={marker.lat}>
+                  <Marker
+                    longitude={marker.position.Longitude}
+                    latitude={marker.position.Latitude}
+                  >
                     <FontAwesomeIcon
                       icon={faMapMarkerAlt}
                       className="text-danger"
@@ -88,11 +115,12 @@ class Map extends React.Component {
                   {this.renderPopup(index)}
                 </div>
               );
-            })}
+            })} */}
           </div>
         </ReactMapGL>
       </div>
     );
   }
 }
+Map.contextType = Context;
 export default Map;

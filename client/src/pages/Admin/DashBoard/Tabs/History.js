@@ -206,19 +206,19 @@ class History extends React.Component {
         </h5>
         <hr />
         <Row>
-          <Col className="seperate-charts mr-2">
+          <Col className="seperate-charts mr-4" md={5}>
             <Line data={sadnessData} />
           </Col>
-          <Col className="seperate-charts mr-2">
+          <Col className="seperate-charts mr-4" md={5}>
             <Line data={angerData} />
           </Col>
-          <Col className="seperate-charts mr-2">
+          <Col className="seperate-charts mr-4 mt-2" md={5}>
             <Line data={joyData} />
           </Col>
-          <Col className="seperate-charts mr-2 mt-2">
+          <Col className="seperate-charts mr-4 mt-2" md={5}>
             <Line data={disgustData} />
           </Col>
-          <Col className="seperate-charts mr-2 mt-2">
+          <Col className="seperate-charts mr-4 mt-2" md={5}>
             <Line data={fearData} />
           </Col>
         </Row>
