@@ -64,7 +64,7 @@ class Home extends React.Component {
       })
       .then((res) => {
         this.context.updateTodayTweets(res.data);
-        // this.getCoordinatesForLocations();
+        this.getCoordinatesForLocations();
       });
   };
 

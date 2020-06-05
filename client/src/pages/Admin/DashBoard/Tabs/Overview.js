@@ -36,7 +36,7 @@ class OverView extends React.Component {
     this.state = {
       isShowHashTagsModalOpen: false,
       isRadarModalOpen: false,
-      isMapModalOpen: true,
+      isMapModalOpen: false,
     };
   }
 

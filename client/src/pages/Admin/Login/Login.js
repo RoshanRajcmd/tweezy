@@ -8,8 +8,8 @@ import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-// Const
-// import Const from "../../../const/const";
+// Contxt
+import Context from "../../../context/Context";
 
 class Login extends React.Component {
   constructor() {
@@ -34,7 +34,9 @@ class Login extends React.Component {
   login = () => {
     this.setState({ loading: true });
     if (this.state.email !== "" && this.state.password !== "") {
-      //
+      this.context.sleep(2000).then(() => {
+        window.location = "http://localhost:3000/admin/home";
+      });
     } else {
       this.setState({
         emailError: "Enter the details",
@@ -60,7 +62,7 @@ class Login extends React.Component {
                   alt=""
                 />
 
-                <h5 className="mt-3 text-dark">Welcome Recruiter !</h5>
+                <h5 className="mt-3 text-dark">Welcome Admin !</h5>
                 <p className="text-secondary small">
                   Sign in with your email ID or phone number
                 </p>
@@ -96,9 +98,7 @@ class Login extends React.Component {
                   }`}
                   onClick={this.login}
                 >
-                  {this.state.loading
-                    ? "Loading"
-                    : "Login in to recruiter portal"}
+                  {this.state.loading ? "Loading" : "Login in to dashboard"}
 
                   <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
                 </Button>
@@ -133,4 +133,5 @@ class Login extends React.Component {
     );
   }
 }
+Login.contextType = Context;
 export default Login;
