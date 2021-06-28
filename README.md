@@ -1,7 +1,4 @@
 <h1 align="center">
-  <br>
-  <img src="https://images.news18.com/ibnlive/uploads/2019/10/WhatsApp.jpg?impolicy=website&width=534&height=356"/>
-  <br>
   Tweezy
   <br>
 </h1>
