@@ -6,17 +6,9 @@ services:
       context: ./server
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017/tweezy
-      - TWITTER_CONSUMER_KEY=${TWITTER_CONSUMER_KEY}
-      - TWITTER_CONSUMER_SECRET=${TWITTER_CONSUMER_SECRET}
-      - TWITTER_ACCESS_TOKEN=${TWITTER_ACCESS_TOKEN}
-      - TWITTER_ACCESS_TOKEN_SECRET=${TWITTER_ACCESS_TOKEN_SECRET}
-      - TONE_ANALYZER_API_KEY=${TONE_ANALYZER_API_KEY}
-      - TONE_ANALYZER_URL=${TONE_ANALYZER_URL}
-      - NLU_API_KEY=${NLU_API_KEY}
-      - NLU_URL=${NLU_URL}
+      - "5001:5000"
+    env_file:
+      - ./server/.env
     depends_on:
       - mongo
 
