@@ -9,8 +9,6 @@
 <img src="https://miro.medium.com/max/450/1*p3Ste5R_iJzi5IcSmFkmtg.png" />
 </div>
 
-# Project Title: Tweezy
-
 ## Description
 Tweezy is a Python-based application that collects tweets, analyzes their sentiment, and stores the results in a MongoDB database. It utilizes various libraries such as Flask for the web framework, Tweepy for accessing the Twitter API, NLTK for natural language processing, and IBM Watson services for advanced text analysis.
 
