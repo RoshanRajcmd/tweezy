@@ -70,7 +70,7 @@ tweezy
    ```
 
 ## Usage
-- The application exposes several API endpoints:
+- The application exposes several API endpoints: `http://localhost:5000`
   - `/api/getTweets`: Collects tweets based on a specified hashtag and analyzes their sentiment.
   - `/api/getTweetsByDate`: Retrieves tweets stored in the database by date.
   - `/api/getAllTweets`: Fetches all tweets stored in the database.
@@ -87,10 +87,10 @@ To run the application in a Docker container, follow these steps:
 
 2. **Run the Docker Container**
    ```bash
-   docker run -p 300:300 client/ tweezy-client
+   docker run -p 3000:3000 client/ tweezy-client
    docker run -p 5000:5000 --env-file server/.env tweezy-server
    (or)
    docker compose -f 'docker-compose.yaml' up -d --build
    ```
 
-Note: If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
+Note: The Front-end is running on port 3000 and the Back-end is on port 5000 of your local machine.
